@@ -1,3 +1,3 @@
 # WebApp
-A basic webapp built with flask
+A basic webapp built with flask.
 Its under progress...
