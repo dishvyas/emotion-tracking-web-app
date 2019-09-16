@@ -40,11 +40,6 @@ def about():
     return render_template('about.html')
 
 
-@app.route('/articles')
-def articles():
-    return render_template('articles.html', articles=Articles)
-
-
 class RegisterForm(Form):
     name = StringField('Name', [validators.Length(min=1, max=50)])
     username = StringField('Username', [validators.Length(min=4, max=25)])
