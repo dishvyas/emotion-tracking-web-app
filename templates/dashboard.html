@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+<div class="container" style="padding-top: 5%">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card text-center">
+                <div class="card-header">
+                    <h3>Emotion Detection Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <!-- Webcam Feed -->
+                    <div id="webcam-container">
+                        <video id="webcam" autoplay playsinline></video>
+                    </div>
+
+                    <!-- Placeholder for Emotion Display -->
+                    <div id="emotion-display" class="mt-3">
+                        <h4>Current Emotion: <span id="emotion">Neutral</span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include JavaScript to handle webcam feed -->
+<script>
+    // Access the webcam
+    const video = document.getElementById('webcam');
+
+    // Check if the user's browser supports mediaDevices.getUserMedia
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        // Request access to the webcam
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                // Attach the stream to the video element
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function(error) {
+                console.error("Error accessing webcam:", error);
+                document.getElementById('emotion-display').innerText = 'Webcam access denied.';
+            });
+    } else {
+        console.warn("getUserMedia not supported on your browser!");
+        document.getElementById('emotion-display').innerText = 'Webcam not supported.';
+    }
+
+    // Placeholder for emotion detection
+    // This can be updated later with actual emotion detection logic
+    document.getElementById('emotion').innerText = 'Neutral';  // Example placeholder
+</script>
+
+<style>
+    #webcam-container {
+        position: relative;
+        width: 100%;
+        height: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: #f8f9fa;
+        padding: 10px;
+    }
+
+    #webcam {
+        width: 100%;
+        max-width: 640px;
+        height: auto;
+        border-radius: 10px;
+        border: 3px solid #007bff;
+    }
+
+    #emotion-display {
+        font-size: 1.5rem;
+        font-weight: bold;
+    }
+</style>
+{% endblock %}
