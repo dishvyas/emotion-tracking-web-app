@@ -4,112 +4,94 @@ from keras.models import load_model
 import numpy as np
 
 
-# cap = cv2.VideoCapture(0)
-
-# if not cap.isOpened():
-#     print("Cannot open camera")
-#     exit()
-
-# while True:
-#     ret, frame = cap.read()
-#     if not ret:
-#         print("Can't receive frame (stream end?). Exiting ...")
-#         break
-
-#     cv2.imshow('frame', frame)
-#     if cv2.waitKey(1) == ord('q'):
-#         break
-
-# cap.release()
-# cv2.destroyAllWindows()
 
 
-# class VideoCamera(object):
-#     def __init__(self):
-#         detection_model_path = 'haarcascade_files/haarcascade_frontalface_default.xml'
-#         emotion_model_path = 'models/_mini_XCEPTION.102-0.66.hdf5'
+class VideoCamera(object):
+    def __init__(self):
+        detection_model_path = 'haarcascade_files/haarcascade_frontalface_default.xml'
+        emotion_model_path = 'models/_mini_XCEPTION.102-0.66.hdf5'
 
-#         # Load Haar Cascade model
-#         self.face_detection = cv2.CascadeClassifier(detection_model_path)
-#         if self.face_detection.empty():
-#             raise Exception("Error loading Haar Cascade model for face detection.")
+        # Load Haar Cascade model
+        self.face_detection = cv2.CascadeClassifier(detection_model_path)
+        if self.face_detection.empty():
+            raise Exception("Error loading Haar Cascade model for face detection.")
 
-#         print("Haar Cascade model loaded successfully.")
+        print("Haar Cascade model loaded successfully.")
 
-#         # Load emotion detection model
-#         try:
-#             self.emotion_classifier = load_model(emotion_model_path, compile=False)
-#             print("Emotion detection model loaded successfully.")
-#         except Exception as e:
-#             raise Exception(f"Error loading emotion detection model: {e}")
+        # Load emotion detection model
+        try:
+            self.emotion_classifier = load_model(emotion_model_path, compile=False)
+            print("Emotion detection model loaded successfully.")
+        except Exception as e:
+            raise Exception(f"Error loading emotion detection model: {e}")
 
-#         self.EMOTIONS = ["angry", "disgust", "scared", "happy", "sad", "surprised", "neutral"]
+        self.EMOTIONS = ["angry", "disgust", "scared", "happy", "sad", "surprised", "neutral"]
 
-#         # Initialize camera
-#         self.camera = cv2.VideoCapture(0)
-#         if not self.camera.isOpened():
-#             raise Exception("Could not open video source")
+        # Initialize camera
+        self.camera = cv2.VideoCapture(0)
+        if not self.camera.isOpened():
+            raise Exception("Could not open video source")
 
-#         print("Camera initialized successfully.")
+        print("Camera initialized successfully.")
 
-#     def __del__(self):
-#         self.cleanup()
+    def __del__(self):
+        self.cleanup()
 
-#     def cleanup(self):
-#         if self.camera.isOpened():
-#             self.camera.release()
-#         cv2.destroyAllWindows()
+    def cleanup(self):
+        if self.camera.isOpened():
+            self.camera.release()
+        cv2.destroyAllWindows()
 
-#     def get_frame(self):
-#         ret, frame = self.camera.read()
-#         if not ret:
-#             print("Failed to grab frame")
-#             return None
+    def get_frame(self):
+        ret, frame = self.camera.read()
+        if not ret:
+            print("Failed to grab frame")
+            return None
 
-#         frame = cv2.resize(frame, (300, 300))
-#         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-#         faces = self.face_detection.detectMultiScale(
-#             gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+        frame = cv2.resize(frame, (300, 300))
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = self.face_detection.detectMultiScale(
+            gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
 
-#         if len(faces) > 0:
-#             (fX, fY, fW, fH) = sorted(faces, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]), reverse=True)[0]
-#             roi = gray[fX:fX + fW, fY:fY + fH]
-#             roi = cv2.resize(roi, (64, 64))
-#             roi = roi.astype("float") / 255.0
-#             roi = img_to_array(roi)
-#             roi = np.expand_dims(roi, axis=0)
+        if len(faces) > 0:
+            (fX, fY, fW, fH) = sorted(faces, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]), reverse=True)[0]
+            roi = gray[fX:fX + fW, fY:fY + fH]
+            roi = cv2.resize(roi, (64, 64))
+            roi = roi.astype("float") / 255.0
+            roi = img_to_array(roi)
+            roi = np.expand_dims(roi, axis=0)
 
-#             preds = self.emotion_classifier.predict(roi)[0]
-#             label = self.EMOTIONS[preds.argmax()]
+            preds = self.emotion_classifier.predict(roi)[0]
+            label = self.EMOTIONS[preds.argmax()]
 
-#             # Draw label on the frame
-#             cv2.putText(frame, label, (fX, fY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
-#             cv2.rectangle(frame, (fX, fY), (fX + fW, fY + fH), (0, 0, 255), 2)
+            # Draw label on the frame
+            cv2.putText(frame, label, (fX, fY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+            cv2.rectangle(frame, (fX, fY), (fX + fW, fY + fH), (0, 0, 255), 2)
 
-#         # Encode the frame in JPEG format
-#         ret, jpeg = cv2.imencode('.jpg', frame)
-#         return jpeg.tobytes() if ret else None
+        # Encode the frame in JPEG format
+        ret, jpeg = cv2.imencode('.jpg', frame)
+        return jpeg.tobytes() if ret else None
     
 
-# if __name__ == "__main__":
-#     print("Starting the script...")
+if __name__ == "__main__":
+    print("Starting the script...")
 
-#     try:
-#         print("Initializing camera...")
-#         cam = VideoCamera()
-#         print("Camera initialized.")
-#     except Exception as e:
-#         print(f"Exception during initialization: {e}")
+    try:
+        print("Initializing camera...")
+        cam = VideoCamera()
+        print("Camera initialized.")
+    except Exception as e:
+        print(f"Exception during initialization: {e}")
     
-#     while True:
-#         frame = cam.get_frame()
-#         if frame is None:
-#             break
-#         # Convert bytes back to image for display
-#         img = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
-#         cv2.imshow('frame', img)
+    while True:
+        frame = cam.get_frame()
+        if frame is None:
+            break
+        # Convert bytes back to image for display
+        img = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
+        cv2.imshow('frame', img)
         
-#         if cv2.waitKey(1) & 0xFF == ord('q'):
-#             break
+        if cv2.waitKey(1) & 0xFF == ord('q'):
+            break
 
-#     cam.cleanup()
+    cam.cleanup()
