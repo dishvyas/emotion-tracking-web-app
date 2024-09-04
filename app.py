@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from passlib.hash import sha256_crypt
 from wtforms import Form, StringField, PasswordField, validators
 from camera import VideoCamera
+import jsonify
 
 app = Flask(__name__)
 
@@ -122,16 +123,28 @@ def logout():
     return redirect(url_for('login'))
 
 
-@app.route('/video_feed', methods=['GET'])
+@app.route('/video_feed')
 def video_feed():
     """
-    Route for video streaming.
-
-    Returns:
-        Response: A Flask Response object that streams video frames from the webcam.
+    Video streaming route. Used in the src attribute of the img tag.
     """
-    return Response(gen(VideoCamera()),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
+    return Response(generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+def generate_frames():
+    """
+    Generates video frames with emotion detection results.
+    """
+    cam = VideoCamera()  
+    
+    while True:
+        frame, emotion = cam.get_frame()  # Gets the processed frame and emotion
+        if frame is None:
+            break
+        yield (b'--frame\r\n'
+               b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n\r\n')
+        
+
 
 @app.route('/about')
 def about():

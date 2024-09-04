@@ -11,7 +11,7 @@
                 <div class="card-body">
                     <!-- Webcam Feed -->
                     <div id="webcam-container">
-                        <video id="webcam" autoplay playsinline></video>
+                        <img id="webcam-feed" src="{{ url_for('video_feed') }}" />
                     </div>
 
                     <!-- Placeholder for Emotion Display -->
@@ -24,49 +24,54 @@
     </div>
 </div>
 
+
 <!-- Include JavaScript to handle webcam feed -->
 <script>
     // Access the webcam
-    const video = document.getElementById('webcam');
+const video = document.getElementById('webcam');
 
-    // Check if the user's browser supports mediaDevices.getUserMedia
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-        // Request access to the webcam
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(function(stream) {
-                // Attach the stream to the video element
-                video.srcObject = stream;
-                video.play();
-            })
-            .catch(function(error) {
-                console.error("Error accessing webcam:", error);
-                document.getElementById('emotion-display').innerText = 'Webcam access denied.';
-            });
-    } else {
-        console.warn("getUserMedia not supported on your browser!");
-        document.getElementById('emotion-display').innerText = 'Webcam not supported.';
+// Check if the user's browser supports mediaDevices.getUserMedia
+if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    // Request access to the webcam
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(function(stream) {
+            // Attach the stream to the video element
+            video.srcObject = stream;
+            video.play();
+            document.getElementById('emotion-display').innerText = '';  // Remove any error message
+        })
+        .catch(function(error) {
+            console.error("Error accessing webcam:", error);
+            document.getElementById('emotion-display').innerText = 'Current Emotion: ';
+        });
+} else {
+    console.warn("getUserMedia not supported on your browser!");
+    document.getElementById('emotion-display').innerText = 'Webcam not supported.';
+}
+
+function updateEmotion() {
+        fetch('/emotion').then(response => response.json()).then(data => {
+            document.getElementById('emotion').innerText = data.emotion;
+        }).catch(error => {
+            console.error("Error fetching emotion data:", error);
+        });
     }
 
-    // Placeholder for emotion detection
-    // This can be updated later with actual emotion detection logic
-    document.getElementById('emotion').innerText = 'Neutral';  // Example placeholder
+    // Run the updateEmotion function every second
+    setInterval(updateEmotion, 1000);
 </script>
 
 <style>
     #webcam-container {
-        position: relative;
-        width: 100%;
-        height: auto;
         display: flex;
         justify-content: center;
         align-items: center;
-        background-color: #f8f9fa;
-        padding: 10px;
+        padding: 20px;
     }
 
     #webcam {
         width: 100%;
-        max-width: 640px;
+        max-width: 320px; /* Adjust the maximum width of the webcam feed */
         height: auto;
         border-radius: 10px;
         border: 3px solid #007bff;
@@ -75,6 +80,11 @@
     #emotion-display {
         font-size: 1.5rem;
         font-weight: bold;
+        margin-top: 20px;
+    }
+
+    .card {
+        padding: 20px;
     }
 </style>
 {% endblock %}

@@ -69,6 +69,8 @@ Register and Log In
 Access the Dashboard
 
 Once logged in, you can access the dashboard via the /dashboard route. The dashboard will display your webcam feed and the detected emotion.
+
+
 Logout
 
 You can log out using the /logout route, which will redirect you back to the login page.
@@ -113,19 +115,4 @@ Acknowledgments
 
     The Emotion Recognition Web App is inspired by various open-source projects in the field of emotion detection and real-time video processing.
     Special thanks to the contributors who have worked on this project.
-
-
-
-### **Explanation:**
-
-- **Overview**: Provides a general introduction to the app.
-- **Features**: Lists the main features of the app.
-- **Tech Stack**: Lists the technologies used.
-- **Setup and Installation**: Provides a step-by-step guide on how to set up and run the app locally.
-- **Usage**: Explains how to use the app after setting it up.
-- **File Structure**: Gives an overview of the project's directory structure.
-- **Future Enhancements**: Lists potential improvements or new features that could be added.
-- **Contributing**: Invites others to contribute to the project.
-- **License**: Mentions the project's licensing.
-- **Acknowledgments**: Thanks and credits to anyone who inspired or helped with the project.
 

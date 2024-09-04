@@ -1,15 +1,13 @@
 import cv2
-from keras.preprocessing.image import img_to_array
-from keras.models import load_model
 import numpy as np
-
-
+from keras.utils import img_to_array
+from keras.models import load_model
 
 
 class VideoCamera(object):
     def __init__(self):
         detection_model_path = 'haarcascade_files/haarcascade_frontalface_default.xml'
-        emotion_model_path = 'models/_mini_XCEPTION.102-0.66.hdf5'
+        emotion_model_path = 'models/fer2013_mini_XCEPTION.107-0.66.hdf5'
 
         # Load Haar Cascade model
         self.face_detection = cv2.CascadeClassifier(detection_model_path)
@@ -25,7 +23,7 @@ class VideoCamera(object):
         except Exception as e:
             raise Exception(f"Error loading emotion detection model: {e}")
 
-        self.EMOTIONS = ["angry", "disgust", "scared", "happy", "sad", "surprised", "neutral"]
+        self.EMOTIONS = ['Angry', 'Disgust', 'Fear', 'Happy', 'Sad', 'Surprise', 'Neutral']
 
         # Initialize camera
         self.camera = cv2.VideoCapture(0)
@@ -46,12 +44,14 @@ class VideoCamera(object):
         ret, frame = self.camera.read()
         if not ret:
             print("Failed to grab frame")
-            return None
+            return None, None  # Return None for both frame and emotion
 
         frame = cv2.resize(frame, (300, 300))
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = self.face_detection.detectMultiScale(
             gray, scaleFactor=1.1, minNeighbors=5, minSize=(30, 30), flags=cv2.CASCADE_SCALE_IMAGE)
+
+        emotion_label = "Neutral"  # Default emotion
 
         if len(faces) > 0:
             (fX, fY, fW, fH) = sorted(faces, key=lambda x: (x[2] - x[0]) * (x[3] - x[1]), reverse=True)[0]
@@ -62,16 +62,16 @@ class VideoCamera(object):
             roi = np.expand_dims(roi, axis=0)
 
             preds = self.emotion_classifier.predict(roi)[0]
-            label = self.EMOTIONS[preds.argmax()]
+            emotion_label = self.EMOTIONS[preds.argmax()]
 
             # Draw label on the frame
-            cv2.putText(frame, label, (fX, fY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
+            cv2.putText(frame, emotion_label, (fX, fY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 2)
             cv2.rectangle(frame, (fX, fY), (fX + fW, fY + fH), (0, 0, 255), 2)
 
         # Encode the frame in JPEG format
         ret, jpeg = cv2.imencode('.jpg', frame)
-        return jpeg.tobytes() if ret else None
-    
+        return jpeg.tobytes() if ret else None, emotion_label
+
 
 if __name__ == "__main__":
     print("Starting the script...")
@@ -89,7 +89,7 @@ if __name__ == "__main__":
             break
         # Convert bytes back to image for display
         img = cv2.imdecode(np.frombuffer(frame, np.uint8), cv2.IMREAD_COLOR)
-        cv2.imshow('frame', img)
+        cv2.imshow('Emotion Detection', img)
         
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
